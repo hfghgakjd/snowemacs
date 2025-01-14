@@ -26,29 +26,30 @@
 ;; Company配置 - 代码补全框架
 (use-package company
   :ensure t
-  :defer 2                                       ; 延迟2秒加载
+  :defer t                                      ; 完全延迟加载
   :commands (company-mode global-company-mode)
-  :hook (after-init . global-company-mode)       ; 使用hook代替init提升性能
   :init
   (setq company-idle-delay 0.2                    ; 延迟0.2秒开始补全，平衡响应速度和性能
-        company-minimum-prefix-length 1           ; 输入1个字符后触发补全，提供及时补全
+        company-minimum-prefix-length 2           ; 输入2个字符后触发补全，提供及时补全
         company-show-quick-access t               ; 显示快速访问键，提升选择效率
-        company-tooltip-limit 20                  ; 最多显示20个候选项，避免显示性能问题
-        company-tooltip-align-annotations t))     ; 对齐注释，优化显示效果
+        company-tooltip-limit 10                  ; 最多显示10个候选项，避免显示性能问题
+        company-tooltip-align-annotations t)      ; 对齐注释，优化显示效果
+  ;; 仅在编程模式和文本模式下启用
+  :hook ((prog-mode text-mode) . company-mode))
 
 ;; Ivy配置 - 通用补全框架
 (use-package ivy
   :ensure t
-  :defer 1                                       ; 延迟1秒加载
+  :defer t                                      ; 完全延迟加载
   :diminish
   :commands (ivy-mode)
-  :hook (after-init . ivy-mode)                  ; 使用hook延迟加载
   :init
   (setq ivy-count-format "(%d/%d) "              ; 显示当前/总数，便于定位
         ivy-use-virtual-buffers t)               ; 启用虚拟缓冲区，包含最近文件
-  :bind
-  (:map ivy-minibuffer-map
-        ("RET" . ivy-alt-done)))                 ; 智能补全行为，优化路径补全
+  ;; 仅在需要时加载
+  :hook (after-init . (lambda ()
+                       (unless (bound-and-true-p ivy-mode)
+                         (ivy-mode 1)))))
 
 (provide 'init-autocomplete)
 ;;; init-autocomplete.el ends here

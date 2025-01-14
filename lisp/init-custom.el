@@ -1,4 +1,4 @@
-;;; init-custom.el --- Emacs基础界面与性能优化配置 -*- lexical-binding: t -*-
+;;; init-custom.el --- 基础配置 -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;;
@@ -23,11 +23,45 @@
 
 ;;; Code:
 
-(tool-bar-mode -1)                               ; 关闭工具栏，保持界面简洁
-(menu-bar-mode -1)                               ; 关闭菜单栏，最大化编辑区域
-(global-display-line-numbers-mode 1)             ; 显示行号，便于代码导航
-(if (fboundp 'scroll-bar-mode) 
-    (scroll-bar-mode -1))                        ; 关闭滚动条，节省显示空间
+;; 启动优化
+(setq gc-cons-threshold most-positive-fixnum  ; 启动时禁用GC
+      gc-cons-percentage 0.6)
+
+;; 核心UI配置
+(push '(menu-bar-lines . 0) default-frame-alist)
+(push '(tool-bar-lines . 0) default-frame-alist)
+(push '(vertical-scroll-bars) default-frame-alist)
+
+;; 基础设置
+(setq inhibit-startup-message t
+      inhibit-startup-echo-area-message user-login-name
+      inhibit-default-init t
+      initial-major-mode 'fundamental-mode
+      initial-scratch-message nil)
+
+;; 文件处理优化
+(setq auto-mode-case-fold nil)
+
+;; 性能优化
+(setq-default bidi-display-reordering nil
+              cursor-in-non-selected-windows nil)
+(setq fast-but-imprecise-scrolling t
+      frame-inhibit-implied-resize t
+      idle-update-delay 1.0
+      redisplay-skip-fontification-on-input t)
+
+;; 启动完成后恢复GC
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 16 1024 1024)
+                  gc-cons-percentage 0.1)
+            (garbage-collect)) t)
+
+;; 其他设置延迟加载
+(with-eval-after-load 'faces
+  (set-face-attribute 'default nil :font "Consolas-11")
+  (dolist (charset '(kana han symbol cjk-misc bopomofo))
+    (set-fontset-font t charset (font-spec :family "仿宋" :size 18))))
 
 ;; GC优化配置
 (setq gc-cons-threshold (* 50 1000 1000))         ; 提高GC阈值到50MB，减少GC频率
