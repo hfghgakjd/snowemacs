@@ -57,6 +57,21 @@
     (add-to-list 'org-export-filter-final-output-functions 'org-latex-highlight-texttt)
     (add-hook 'org-export-before-processing-hook 'my/org-latex-remove-hypersetup)))
 
+;; 添加在 LaTeX 导出钩子之前
+(defun my/org-latex-remove-hypersetup (backend)
+  "Remove hypersetup options when exporting to BACKEND.
+This function should be added to `org-export-before-processing-hook'."
+  (when (eq backend 'latex)
+    (goto-char (point-min))
+    (while (re-search-forward "^[ \t]*\\\\hypersetup{.*}[ \t]*\n?" nil t)
+      (replace-match ""))))
+
+;; 高亮字体
+(defun org-latex-highlight-texttt (text backend info)
+  "Highlight =text= with \\textcolor{hltextcolor}{\\texttt{}} in LaTeX export."
+  (when (org-export-derived-backend-p backend 'latex)
+    (replace-regexp-in-string "\\\\texttt{\\([^}]+\\)}" "\\\\textcolor{hltextcolor}{\\\\texttt{\\1}}" text)))
+
 ;; 延迟加载org-babel语言支持
 (with-eval-after-load 'ob
   (defun my/setup-org-babel-languages ()
